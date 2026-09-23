@@ -3,7 +3,7 @@
 import React from 'react';
 import { StoreId } from '@/lib/types';
 import { STORES } from '@/lib/constants';
-import { Check, Store } from 'lucide-react';
+import { Check, Store, AlertTriangle } from 'lucide-react';
 
 interface StoreFilterProps {
   selectedStores: StoreId[];
@@ -11,6 +11,7 @@ interface StoreFilterProps {
   onSelectAll: () => void;
   onClearAll: () => void;
   storeCounts: Record<StoreId, number>;
+  storeErrors?: Partial<Record<StoreId, string>>;
 }
 
 export function StoreFilter({
@@ -19,6 +20,7 @@ export function StoreFilter({
   onSelectAll,
   onClearAll,
   storeCounts,
+  storeErrors = {},
 }: StoreFilterProps) {
   const storeList = Object.values(STORES);
   const allSelected = selectedStores.length === storeList.length;
@@ -47,14 +49,18 @@ export function StoreFilter({
         {storeList.map((st) => {
           const isSelected = selectedStores.includes(st.id);
           const count = storeCounts[st.id] ?? 0;
+          const errorMsg = storeErrors[st.id];
 
           return (
             <button
               key={st.id}
               type="button"
               onClick={() => onToggleStore(st.id)}
+              title={errorMsg}
               className={`flex items-center justify-between p-2.5 rounded-xl border text-left transition-all ${
-                isSelected
+                errorMsg
+                  ? 'border-amber-300 bg-amber-50/70 text-amber-900'
+                  : isSelected
                   ? 'border-blue-500 bg-blue-50/70 text-slate-900 shadow-2xs'
                   : 'border-slate-200 bg-slate-50/60 text-slate-400 hover:bg-slate-100 hover:text-slate-600'
               }`}
@@ -74,21 +80,35 @@ export function StoreFilter({
                 </span>
               </div>
 
-              {count > 0 && (
-                <span
-                  className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full ml-1 shrink-0 ${
-                    isSelected
-                      ? 'bg-blue-200 text-blue-900'
-                      : 'bg-slate-200 text-slate-600'
-                  }`}
-                >
-                  {count}
-                </span>
+              {errorMsg ? (
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-500 ml-1 shrink-0" />
+              ) : (
+                count > 0 && (
+                  <span
+                    className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full ml-1 shrink-0 ${
+                      isSelected
+                        ? 'bg-blue-200 text-blue-900'
+                        : 'bg-slate-200 text-slate-600'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                )
               )}
             </button>
           );
         })}
       </div>
+
+      {Object.keys(storeErrors).length > 0 && (
+        <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 space-y-0.5">
+          {Object.entries(storeErrors).map(([storeId, msg]) => (
+            <p key={storeId}>
+              <span className="font-bold">{STORES[storeId as StoreId]?.shortName}:</span> {msg}
+            </p>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

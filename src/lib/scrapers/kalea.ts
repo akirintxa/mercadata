@@ -8,10 +8,24 @@ export async function searchKalea(
   exchangeRate: number
 ): Promise<Product[]> {
   try {
-    const formattedQuery = `*${query.trim().replace(/\s+/g, '*')}*`;
-    const url = `${KALEA_SUPABASE_URL}/rest/v1/products?select=id,code,string_code,name,brand,presentation,thumbnail_url,inventory(price,price_base,tax_rate,quantity)&name=ilike.${encodeURIComponent(
-      formattedQuery
-    )}&active=eq.true&limit=24`;
+    const words = query.trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) words.push(query.trim());
+
+    // Require every word to appear (AND), but let each word match in any of
+    // name/brand/presentation and in any order (OR per word). The previous
+    // approach glued all words into a single "*w1*w2*"-style pattern against
+    // `name` only, which missed products where a word lives in `brand` (e.g.
+    // "P.A.N." as brand, not in the name) or appears in a different order —
+    // a real cause of low recall on Kalea.
+    const orAcrossColumns = (w: string) =>
+      `or(name.ilike.*${w}*,brand.ilike.*${w}*,presentation.ilike.*${w}*)`;
+
+    const filterParam =
+      words.length > 1
+        ? `and=${encodeURIComponent(`(${words.map(orAcrossColumns).join(',')})`)}`
+        : `or=${encodeURIComponent(`(name.ilike.*${words[0]}*,brand.ilike.*${words[0]}*,presentation.ilike.*${words[0]}*)`)}`;
+
+    const url = `${KALEA_SUPABASE_URL}/rest/v1/products?select=id,code,string_code,name,brand,presentation,thumbnail_url,inventory(price,price_base,tax_rate,quantity)&${filterParam}&active=eq.true&limit=40`;
 
     const res = await fetch(url, {
       headers: {

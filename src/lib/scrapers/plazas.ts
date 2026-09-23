@@ -19,6 +19,16 @@ export async function searchPlazas(
     });
 
     if (!res.ok) {
+      // Plaza's has Cloudflare's bot-challenge ("Managed Challenge") in
+      // front of the whole site, which a plain server-side fetch can never
+      // solve (it requires executing JS in a real browser). Surface this as
+      // an error instead of silently returning empty results, so it isn't
+      // mistaken for "no matching products".
+      if (res.headers.get('cf-mitigated') || res.status === 403) {
+        throw new Error(
+          "Plaza's está bloqueando el acceso automatizado (protección Cloudflare) y no se puede consultar en este momento"
+        );
+      }
       console.error(`Plazas error status: ${res.status}`);
       return [];
     }
@@ -88,6 +98,6 @@ export async function searchPlazas(
     return products;
   } catch (err) {
     console.error('Error in searchPlazas:', err);
-    return [];
+    throw err instanceof Error ? err : new Error(String(err));
   }
 }
