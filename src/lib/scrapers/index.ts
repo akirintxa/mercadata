@@ -5,7 +5,7 @@ import { searchGama } from './gama';
 import { searchPlazas } from './plazas';
 import { searchKalea } from './kalea';
 import { searchFarmatodo } from './farmatodo';
-import { evaluateProductMatch, normalizeText } from '../searchMatcher';
+import { evaluateProductMatch, normalizeText, STOPWORDS } from '../searchMatcher';
 
 interface SearchOptions {
   stores?: StoreId[];
@@ -56,11 +56,36 @@ export async function searchAllStores(
   // Store query: if query has keywords + size, we send the core keywords or full query
   const queryForStores = keywordTokens.length > 0 ? keywordTokens.join(' ') : cleanQuery;
 
+  // Some store search backends (e.g. Central's WooCommerce "search" param)
+  // effectively require the words to appear together/in order, so a
+  // multi-word query like "atun en agua" can return zero results even
+  // though matching products exist. As a fallback, if a store's search
+  // comes back empty for a multi-word query, retry with just the single
+  // most distinctive keyword to get a broader result set — the strict
+  // multi-keyword filtering below (evaluateProductMatch) still ensures
+  // only real matches make it into the final results.
+  const meaningfulKeywords = keywordTokens.filter((t) => !STOPWORDS.has(t));
+  const fallbackKeyword = [...(meaningfulKeywords.length > 0 ? meaningfulKeywords : keywordTokens)].sort(
+    (a, b) => b.length - a.length
+  )[0];
+  const fallbackQueryForStores =
+    fallbackKeyword && fallbackKeyword !== queryForStores ? fallbackKeyword : null;
+
+  async function searchStoreWithFallback(
+    searchFn: (query: string, rate: number) => Promise<Product[]>
+  ): Promise<Product[]> {
+    const products = await searchFn(queryForStores, exchangeRate);
+    if (products.length > 0 || !fallbackQueryForStores) {
+      return products;
+    }
+    return searchFn(fallbackQueryForStores, exchangeRate);
+  }
+
   const tasks: Promise<{ store: StoreId; products: Product[]; error?: string }>[] = [];
 
   if (enabledStores.includes('central')) {
     tasks.push(
-      searchCentral(queryForStores, exchangeRate)
+      searchStoreWithFallback(searchCentral)
         .then((products) => ({ store: 'central' as const, products }))
         .catch((err) => ({ store: 'central' as const, products: [], error: String(err) }))
     );
@@ -68,7 +93,7 @@ export async function searchAllStores(
 
   if (enabledStores.includes('gama')) {
     tasks.push(
-      searchGama(queryForStores, exchangeRate)
+      searchStoreWithFallback(searchGama)
         .then((products) => ({ store: 'gama' as const, products }))
         .catch((err) => ({ store: 'gama' as const, products: [], error: String(err) }))
     );
@@ -76,7 +101,7 @@ export async function searchAllStores(
 
   if (enabledStores.includes('plazas')) {
     tasks.push(
-      searchPlazas(queryForStores, exchangeRate)
+      searchStoreWithFallback(searchPlazas)
         .then((products) => ({ store: 'plazas' as const, products }))
         .catch((err) => ({ store: 'plazas' as const, products: [], error: String(err) }))
     );
@@ -84,7 +109,7 @@ export async function searchAllStores(
 
   if (enabledStores.includes('kalea')) {
     tasks.push(
-      searchKalea(queryForStores, exchangeRate)
+      searchStoreWithFallback(searchKalea)
         .then((products) => ({ store: 'kalea' as const, products }))
         .catch((err) => ({ store: 'kalea' as const, products: [], error: String(err) }))
     );
@@ -92,7 +117,7 @@ export async function searchAllStores(
 
   if (enabledStores.includes('farmatodo')) {
     tasks.push(
-      searchFarmatodo(queryForStores, exchangeRate)
+      searchStoreWithFallback(searchFarmatodo)
         .then((products) => ({ store: 'farmatodo' as const, products }))
         .catch((err) => ({ store: 'farmatodo' as const, products: [], error: String(err) }))
     );
@@ -152,12 +177,21 @@ export async function searchAllStores(
   // Default sorting: Price Ascending (lowest to highest)
   const sortBy = options.sortBy || 'price-asc';
 
+  // A product with no stock isn't actually purchasable at that price, so it
+  // should never outrank an available one as "cheapest" — push it to the
+  // bottom regardless of sort order, then apply the chosen sort within each
+  // availability group.
+  const byAvailability = (a: Product, b: Product) =>
+    (a.inStock === b.inStock ? 0 : a.inStock ? -1 : 1);
+
   if (sortBy === 'price-asc') {
-    finalProducts.sort((a, b) => a.priceUsd - b.priceUsd);
+    finalProducts.sort((a, b) => byAvailability(a, b) || a.priceUsd - b.priceUsd);
   } else if (sortBy === 'price-desc') {
-    finalProducts.sort((a, b) => b.priceUsd - a.priceUsd);
+    finalProducts.sort((a, b) => byAvailability(a, b) || b.priceUsd - a.priceUsd);
   } else if (sortBy === 'relevance') {
-    finalProducts.sort((a, b) => (b.score || 0) - (a.score || 0) || a.priceUsd - b.priceUsd);
+    finalProducts.sort(
+      (a, b) => byAvailability(a, b) || (b.score || 0) - (a.score || 0) || a.priceUsd - b.priceUsd
+    );
   }
 
   return {

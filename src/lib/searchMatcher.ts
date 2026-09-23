@@ -1,6 +1,18 @@
 import { Product } from './types';
 
 /**
+ * Spanish stopwords that are common in product descriptions ("atún EN agua",
+ * "aceite DE oliva") but are phrased inconsistently across stores/products
+ * (some omit them entirely). Requiring them as literal keywords caused
+ * valid matches to be dropped, so they don't count toward the required
+ * keyword match ratio — only the meaningful words do.
+ */
+export const STOPWORDS = new Set([
+  'de', 'del', 'la', 'el', 'los', 'las', 'en', 'y', 'o', 'u',
+  'con', 'sin', 'a', 'al', 'un', 'una', 'unos', 'unas', 'para', 'por',
+]);
+
+/**
  * Normalizes text for Venezuelan retail search:
  * - Accents / diacritics removed (á -> a)
  * - Lowercase & whitespace trimmed
@@ -67,7 +79,12 @@ export function evaluateProductMatch(
   // Extract size tokens (e.g. 1l, 2l, 1.5l, 1kg, 500g, 355ml)
   const sizeTokenRegex = /^(\d+(?:\.\d+)?)(l|kg|g|ml)$/;
   const sizeTokens = qTokens.filter((t) => sizeTokenRegex.test(t));
-  const keywordTokens = qTokens.filter((t) => !sizeTokenRegex.test(t));
+  const nonSizeTokens = qTokens.filter((t) => !sizeTokenRegex.test(t));
+
+  // Stopwords are ignored for the required match (products phrase them
+  // inconsistently), unless the query is made up entirely of stopwords.
+  const meaningfulTokens = nonSizeTokens.filter((t) => !STOPWORDS.has(t));
+  const keywordTokens = meaningfulTokens.length > 0 ? meaningfulTokens : nonSizeTokens;
 
   let matchedKeywords = 0;
 
@@ -77,8 +94,12 @@ export function evaluateProductMatch(
     if (regex.test(normProduct)) {
       matchedKeywords++;
     } else {
-      // Substring match for compound words (e.g. "vainill" in "vainilla")
-      if (token.length >= 4 && normProduct.includes(token)) {
+      // Prefix match for compound/inflected words (e.g. "vainill" in
+      // "vainilla"). Anchored to a word start (not `includes`) so a token
+      // like "agua" doesn't false-positive match mid-word inside an
+      // unrelated word like "Paraguana".
+      const prefixRegex = new RegExp(`\\b${escapeRegex(token)}`, 'i');
+      if (token.length >= 4 && prefixRegex.test(normProduct)) {
         matchedKeywords += 0.8;
       }
     }
