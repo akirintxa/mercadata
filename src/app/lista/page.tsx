@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
+import { ModeSwitcher } from '@/components/ModeSwitcher';
 import { ShoppingList } from '@/components/ShoppingList';
 import { ExchangeRateInfo } from '@/lib/types';
 
@@ -47,16 +48,20 @@ export default function ShoppingListPage() {
       />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div className="max-w-2xl mx-auto w-full">
+          <ModeSwitcher />
+        </div>
+
         <div className="text-center space-y-1.5">
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
             ¿En cuál supermercado sale más barata tu compra?
           </h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-slate-500">
             Arma tu lista y te decimos dónde te conviene comprar cada cosa y en conjunto.
           </p>
         </div>
 
-        <ShoppingList />
+        <ShoppingList currency={currency} />
       </main>
 
       <footer className="border-t border-slate-200 bg-white py-6 mt-12 text-center text-xs text-slate-500">

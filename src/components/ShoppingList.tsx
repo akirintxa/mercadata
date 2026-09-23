@@ -12,7 +12,11 @@ import {
   clearShoppingList,
 } from '@/lib/shoppingList';
 
-export function ShoppingList() {
+interface ShoppingListProps {
+  currency: 'USD' | 'VES';
+}
+
+export function ShoppingList({ currency }: ShoppingListProps) {
   const [items, setItems] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isComparing, setIsComparing] = useState(false);
@@ -175,11 +179,16 @@ export function ShoppingList() {
                   )}
                   <p className="font-bold text-slate-900 text-sm">{s.storeName}</p>
                   <p className="text-xl font-black text-slate-900 mt-1">
-                    {s.foundCount > 0 ? formatCurrency(s.totalUsd, 'USD') : '—'}
+                    {s.foundCount > 0
+                      ? formatCurrency(currency === 'USD' ? s.totalUsd : s.totalVes, currency)
+                      : '—'}
                   </p>
                   {s.foundCount > 0 && (
                     <p className="text-xs text-slate-500">
-                      {formatCurrency(s.totalVes, 'VES')}
+                      {formatCurrency(
+                        currency === 'USD' ? s.totalVes : s.totalUsd,
+                        currency === 'USD' ? 'VES' : 'USD'
+                      )}
                     </p>
                   )}
                   <p className="text-xs text-slate-500 mt-2">
@@ -236,7 +245,12 @@ export function ShoppingList() {
                                 : 'text-slate-300'
                             }`}
                           >
-                            {product ? formatCurrency(product.priceUsd, 'USD') : '—'}
+                            {product
+                              ? formatCurrency(
+                                  currency === 'USD' ? product.priceUsd : product.priceVes,
+                                  currency
+                                )
+                              : '—'}
                           </td>
                         );
                       })}

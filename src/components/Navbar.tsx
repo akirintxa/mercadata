@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { DollarSign, ShoppingBag } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
@@ -21,15 +22,15 @@ export function Navbar({
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-2">
-        {/* Brand */}
-        <div className="flex items-center space-x-2.5 min-w-0">
+        {/* Brand — also doubles as the home link */}
+        <Link href="/" className="flex items-center space-x-2.5 min-w-0" title="Ir al inicio">
           <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shrink-0">
             <ShoppingBag className="w-4 h-4" />
           </div>
           <span className="font-extrabold text-lg tracking-tight text-slate-900 truncate">
             Mercadata
           </span>
-        </div>
+        </Link>
 
         {/* Rate + Currency Switcher */}
         <div className="flex items-center space-x-2 shrink-0">

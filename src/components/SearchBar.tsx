@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, X, Loader2, Sparkles } from 'lucide-react';
+import { Search, X, Loader2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { getFrequentSearches, recordSearch } from '@/lib/searchHistory';
+
+const FREQUENT_COLLAPSED_KEY = 'mercadata_frequent_collapsed';
 
 interface SearchBarProps {
   query: string;
@@ -13,16 +15,35 @@ interface SearchBarProps {
 export function SearchBar({ query, onSearch, isLoading }: SearchBarProps) {
   const [inputValue, setInputValue] = useState(query);
   const [frequentSearches, setFrequentSearches] = useState<string[]>([]);
+  const [isFrequentCollapsed, setIsFrequentCollapsed] = useState(false);
 
   useEffect(() => {
     setInputValue(query);
   }, [query]);
 
-  // Load this browser's frequent searches on mount (localStorage isn't
-  // available during SSR, so this has to happen client-side).
+  // Load this browser's frequent searches + collapsed preference on mount
+  // (localStorage isn't available during SSR, so this has to happen
+  // client-side).
   useEffect(() => {
     setFrequentSearches(getFrequentSearches());
+    try {
+      setIsFrequentCollapsed(window.localStorage.getItem(FREQUENT_COLLAPSED_KEY) === 'true');
+    } catch {
+      // ignore (private mode, etc.)
+    }
   }, []);
+
+  const toggleFrequentCollapsed = () => {
+    setIsFrequentCollapsed((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(FREQUENT_COLLAPSED_KEY, String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
 
   const runSearch = (term: string) => {
     recordSearch(term);
@@ -87,23 +108,40 @@ export function SearchBar({ query, onSearch, isLoading }: SearchBarProps) {
         </div>
       </form>
 
-      {/* Popular quick searches */}
-      <div className="flex items-center flex-wrap gap-1.5 pt-1">
-        <div className="flex items-center text-xs font-bold text-slate-500 mr-1">
-          <Sparkles className="w-3.5 h-3.5 mr-1 text-orange-500" />
-          <span>Frecuentes:</span>
-        </div>
-        {frequentSearches.map((item) => (
+      {/* Popular quick searches (collapsible) */}
+      {frequentSearches.length > 0 && (
+        <div className="pt-1">
           <button
-            key={item}
             type="button"
-            onClick={() => handleQuickSearch(item)}
-            className="text-xs bg-white hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 text-slate-600 px-2.5 py-1 rounded-lg border border-slate-200 transition-all shadow-2xs font-medium"
+            onClick={toggleFrequentCollapsed}
+            className="flex items-center text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors"
+            aria-expanded={!isFrequentCollapsed}
           >
-            {item}
+            <Sparkles className="w-3.5 h-3.5 mr-1 text-orange-500" />
+            <span>Frecuentes</span>
+            {isFrequentCollapsed ? (
+              <ChevronDown className="w-3.5 h-3.5 ml-1" />
+            ) : (
+              <ChevronUp className="w-3.5 h-3.5 ml-1" />
+            )}
           </button>
-        ))}
-      </div>
+
+          {!isFrequentCollapsed && (
+            <div className="flex items-center flex-wrap gap-1.5 mt-2">
+              {frequentSearches.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => handleQuickSearch(item)}
+                  className="text-xs bg-white hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 text-slate-600 px-2.5 py-1 rounded-lg border border-slate-200 transition-all shadow-2xs font-medium"
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
