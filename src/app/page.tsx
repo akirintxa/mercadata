@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Navbar } from '@/components/Navbar';
+import { ModeSwitcher } from '@/components/ModeSwitcher';
 import { SearchBar } from '@/components/SearchBar';
 import { StoreFilter } from '@/components/StoreFilter';
 import { ProductCard } from '@/components/ProductCard';
@@ -156,14 +157,19 @@ export default function HomePage() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Mode switcher: buscar 1 producto vs. lista de compras */}
+        <div className="max-w-2xl mx-auto w-full">
+          <ModeSwitcher />
+        </div>
+
         {/* Hero & Search Header */}
-        <section className="bg-gradient-to-b from-white via-slate-50 to-blue-50/20 border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-xs">
-          <div className="max-w-3xl mx-auto text-center space-y-2 mb-6">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Encuentra el precio más bajo en Venezuela
+        <section className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs">
+          <div className="max-w-2xl mx-auto text-center space-y-1.5 mb-5">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              Busca un producto y compara su precio
             </h1>
-            <p className="text-sm sm:text-base text-slate-600">
-              Compara precios en tiempo real entre <span className="font-bold text-blue-900">Central Madeirense</span>, <span className="font-bold text-blue-900">Gama</span>, <span className="font-bold text-blue-900">Plaza&apos;s</span>, <span className="font-bold text-blue-900">Kalea</span> y <span className="font-bold text-blue-900">Farmatodo</span>.
+            <p className="text-sm text-slate-500">
+              Entre Central Madeirense, Gama, Plaza&apos;s, Kalea y Farmatodo, con IVA incluido.
             </p>
           </div>
 
@@ -183,11 +189,14 @@ export default function HomePage() {
           onSelectAll={handleSelectAllStores}
           onClearAll={handleClearAllStores}
           storeCounts={results?.storeCounts || { central: 0, gama: 0, plazas: 0, kalea: 0, farmatodo: 0 }}
+          storeErrors={results?.errors}
         />
 
         {/* Results summary or best price card */}
         {results && products.length > 0 && (
-          <StoreComparisonSummary products={products} currency={currency} />
+          <div className="animate-fade-in-up">
+            <StoreComparisonSummary products={products} currency={currency} />
+          </div>
         )}
 
         {/* Controls Bar: Sort & View Toggle */}
@@ -272,7 +281,7 @@ export default function HomePage() {
 
         {/* Error message */}
         {error && !isLoading && (
-          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl flex items-center space-x-3 text-sm">
+          <div className="animate-fade-in-up bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl flex items-center space-x-3 text-sm">
             <AlertCircle className="w-5 h-5 shrink-0" />
             <div>
               <p className="font-semibold">No se pudieron cargar algunos resultados</p>
@@ -283,7 +292,7 @@ export default function HomePage() {
 
         {/* Results Grid / Columns */}
         {!isLoading && results && products.length > 0 && (
-          <div>
+          <div className="animate-fade-in-up">
             {viewMode === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {products.map((product, idx) => (
@@ -308,7 +317,7 @@ export default function HomePage() {
 
         {/* Empty State */}
         {!isLoading && results && products.length === 0 && (
-          <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center max-w-md mx-auto space-y-3">
+          <div className="animate-fade-in-up bg-white rounded-3xl border border-slate-200 p-12 text-center max-w-md mx-auto space-y-3">
             <div className="w-12 h-12 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center mx-auto">
               <Search className="w-6 h-6" />
             </div>

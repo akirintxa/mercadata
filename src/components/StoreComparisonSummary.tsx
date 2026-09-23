@@ -34,10 +34,11 @@ export function StoreComparisonSummary({
 
   const cheapestStore = STORES[cheapest.store];
 
-  // Group cheapest per store
+  // Group cheapest per store (in-stock products only — an out-of-stock
+  // match isn't something the store can actually sell right now)
   const storeBests = new Map<string, Product>();
   for (const p of products) {
-    if (!storeBests.has(p.store)) {
+    if (p.inStock && !storeBests.has(p.store)) {
       storeBests.set(p.store, p);
     }
   }

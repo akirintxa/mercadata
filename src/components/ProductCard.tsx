@@ -89,7 +89,7 @@ export function ProductCard({
           ) : (
             <span className="inline-flex items-center text-amber-700 font-medium text-[11px] bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
               <AlertCircle className="w-3 h-3 mr-1 text-amber-600 shrink-0" />
-              Stock limitado
+              Agotado — precio de referencia
             </span>
           )}
         </div>
