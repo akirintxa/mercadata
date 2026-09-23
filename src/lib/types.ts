@@ -44,3 +44,27 @@ export interface ExchangeRateInfo {
   source: string;
   updatedAt: string;
 }
+
+export interface ListItemMatch {
+  query: string;
+  matches: Partial<Record<StoreId, Product>>;
+}
+
+export interface StoreListTotal {
+  store: StoreId;
+  storeName: string;
+  totalUsd: number;
+  totalVes: number;
+  foundCount: number;
+  totalCount: number;
+  missingItems: string[];
+}
+
+export interface CompareListResponse {
+  items: string[];
+  timestamp: string;
+  exchangeRate: number;
+  storeTotals: StoreListTotal[];
+  itemResults: ListItemMatch[];
+  cheapestStoreId: StoreId | null;
+}
