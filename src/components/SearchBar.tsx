@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, X, Loader2, Sparkles } from 'lucide-react';
-import { POPULAR_SEARCHES } from '@/lib/constants';
+import { getFrequentSearches, recordSearch } from '@/lib/searchHistory';
 
 interface SearchBarProps {
   query: string;
@@ -12,15 +12,28 @@ interface SearchBarProps {
 
 export function SearchBar({ query, onSearch, isLoading }: SearchBarProps) {
   const [inputValue, setInputValue] = useState(query);
+  const [frequentSearches, setFrequentSearches] = useState<string[]>([]);
 
   useEffect(() => {
     setInputValue(query);
   }, [query]);
 
+  // Load this browser's frequent searches on mount (localStorage isn't
+  // available during SSR, so this has to happen client-side).
+  useEffect(() => {
+    setFrequentSearches(getFrequentSearches());
+  }, []);
+
+  const runSearch = (term: string) => {
+    recordSearch(term);
+    setFrequentSearches(getFrequentSearches());
+    onSearch(term);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
-      onSearch(inputValue.trim());
+      runSearch(inputValue.trim());
     }
   };
 
@@ -30,7 +43,7 @@ export function SearchBar({ query, onSearch, isLoading }: SearchBarProps) {
 
   const handleQuickSearch = (term: string) => {
     setInputValue(term);
-    onSearch(term);
+    runSearch(term);
   };
 
   return (
@@ -80,7 +93,7 @@ export function SearchBar({ query, onSearch, isLoading }: SearchBarProps) {
           <Sparkles className="w-3.5 h-3.5 mr-1 text-orange-500" />
           <span>Frecuentes:</span>
         </div>
-        {POPULAR_SEARCHES.map((item) => (
+        {frequentSearches.map((item) => (
           <button
             key={item}
             type="button"
