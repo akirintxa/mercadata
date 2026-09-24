@@ -82,7 +82,11 @@ export async function searchFarmatodo(
           priceOriginal: Math.round(priceVes * 100) / 100,
           imageUrl,
           productUrl,
-          inStock: hit.hasStock !== false,
+          // `hasStock` is misleading here — it reflects a single reference
+          // warehouse and is `false` even for products actively sold in
+          // hundreds of stores. `stores_with_stock` (the real per-store
+          // inventory list) is the actual availability signal.
+          inStock: Array.isArray(hit.stores_with_stock) && hit.stores_with_stock.length > 0,
         };
       })
       .filter((p: Product) => p.priceUsd > 0);
