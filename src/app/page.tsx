@@ -176,7 +176,7 @@ export default function HomePage() {
               Busca un producto y compara su precio
             </h1>
             <p className="text-sm text-slate-500">
-              Entre Central Madeirense, Gama, Plaza&apos;s, Kalea y Farmatodo, con IVA incluido.
+              Entre Central Madeirense, Gama, Plaza&apos;s, Kalea, Farmatodo y Rio Market, con IVA incluido.
             </p>
           </div>
 
@@ -214,6 +214,13 @@ export default function HomePage() {
                 {products.length} {products.length === 1 ? 'producto encontrado' : 'productos encontrados'}
               </span>
               <span>para &quot;{query}&quot;</span>
+              <span
+                className="flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200"
+                title="Los precios se consultan en vivo directamente en la página web de cada tienda"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                En vivo
+              </span>
             </div>
 
             <div className="flex items-center space-x-2.5">
@@ -345,7 +352,7 @@ export default function HomePage() {
             Mercadata VZLA — Comparador de Precios de Supermercados
           </p>
           <p className="text-slate-400">
-            Precios y disponibilidad obtenidos en tiempo real de Central Madeirense, Gama, Plaza&apos;s, Kalea y Farmatodo.
+            Precios y disponibilidad obtenidos en tiempo real, consultando directamente la página web de Central Madeirense, Gama, Plaza&apos;s, Kalea, Farmatodo y Rio Market.
           </p>
         </div>
       </footer>

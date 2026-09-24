@@ -10,7 +10,7 @@ const MODES = [
     href: '/',
     icon: Search,
     title: 'Buscar un producto',
-    description: 'Compara el precio de un solo producto entre las 5 tiendas',
+    description: 'Compara el precio de un solo producto entre las tiendas',
   },
   {
     href: '/lista',

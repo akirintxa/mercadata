@@ -209,6 +209,14 @@ export function ShoppingList({ currency }: ShoppingListProps) {
       {/* Results */}
       {result && (
         <section className="space-y-4">
+          <span
+            className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200"
+            title="Los precios se consultan en vivo directamente en la página web de cada tienda"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            En vivo
+          </span>
+
           {/* Store totals ranking */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {result.storeTotals.map((s) => {

@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { DollarSign, ShoppingBag } from 'lucide-react';
+import { DollarSign, ShoppingBag, Landmark } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 interface NavbarProps {
@@ -19,6 +19,8 @@ export function Navbar({
   exchangeRate,
   isLoadingRate,
 }: NavbarProps) {
+  const [showRatePopover, setShowRatePopover] = useState(false);
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-2">
@@ -33,13 +35,34 @@ export function Navbar({
         </Link>
 
         {/* Rate + Currency Switcher */}
-        <div className="flex items-center space-x-2 shrink-0">
+        <div className="flex items-center space-x-2 shrink-0 relative">
           <div className="hidden sm:flex items-center space-x-1.5 bg-slate-100 px-3 py-1.5 rounded-full text-xs text-slate-600">
             <span>Tasa BCV:</span>
             <span className="font-bold text-slate-900">
               {isLoadingRate ? '...' : formatCurrency(exchangeRate, 'VES')}
             </span>
           </div>
+
+          {/* Mobile: tap to check the BCV rate without permanently taking up
+              header space (the pill above is hidden below `sm`). */}
+          <button
+            onClick={() => setShowRatePopover((v) => !v)}
+            className="sm:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+            title="Ver tasa BCV"
+            aria-label="Ver tasa BCV"
+            aria-expanded={showRatePopover}
+          >
+            <Landmark className="w-4 h-4" />
+          </button>
+
+          {showRatePopover && (
+            <div className="sm:hidden absolute top-full right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg px-3.5 py-2.5 text-xs text-slate-600 whitespace-nowrap z-50">
+              <span>Tasa BCV: </span>
+              <span className="font-bold text-slate-900">
+                {isLoadingRate ? 'Cargando...' : `1 USD = ${formatCurrency(exchangeRate, 'VES')}`}
+              </span>
+            </div>
+          )}
 
           <button
             onClick={onToggleCurrency}

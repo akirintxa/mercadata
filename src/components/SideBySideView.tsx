@@ -4,7 +4,7 @@ import React from 'react';
 import { Product, StoreId } from '@/lib/types';
 import { STORES } from '@/lib/constants';
 import { ProductCard } from './ProductCard';
-import { Store, AlertCircle } from 'lucide-react';
+import { Store, AlertCircle, MoveHorizontal } from 'lucide-react';
 
 interface SideBySideViewProps {
   products: Product[];
@@ -35,15 +35,24 @@ export function SideBySideView({
   const globalCheapestId = products.length > 0 ? products[0].id : null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-start overflow-x-auto pb-4">
-      {storeList.map((st) => {
-        const items = storeGroups.get(st.id) || [];
+    <div>
+      {/* Mobile-only hint: this row scrolls sideways, not down */}
+      {storeList.length > 1 && (
+        <div className="flex md:hidden items-center justify-center gap-1.5 text-[11px] text-slate-400 mb-2">
+          <MoveHorizontal className="w-3.5 h-3.5" />
+          <span>Desliza para ver las demás tiendas</span>
+        </div>
+      )}
 
-        return (
-          <div
-            key={st.id}
-            className="flex flex-col bg-slate-100/80 p-3 rounded-2xl border border-slate-200/90 space-y-3 min-w-[240px]"
-          >
+      <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 md:grid md:grid-cols-2 md:overflow-visible md:snap-none lg:grid-cols-3 xl:grid-cols-5 items-start">
+        {storeList.map((st) => {
+          const items = storeGroups.get(st.id) || [];
+
+          return (
+            <div
+              key={st.id}
+              className="shrink-0 w-[85vw] max-w-sm snap-center md:w-auto md:max-w-none md:shrink md:min-w-[240px] flex flex-col bg-slate-100/80 p-3 rounded-2xl border border-slate-200/90 space-y-3"
+            >
             {/* Store Column Header */}
             <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between gap-2">
               <div className="flex items-center space-x-2 min-w-0">
@@ -78,9 +87,10 @@ export function SideBySideView({
                 ))
               )}
             </div>
-          </div>
-        );
-      })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

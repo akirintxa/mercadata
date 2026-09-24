@@ -69,6 +69,9 @@ export default function ShoppingListPage() {
           <p className="font-semibold text-slate-700">
             Mercadata VZLA — Comparador de Precios de Supermercados
           </p>
+          <p className="text-slate-400">
+            Precios y disponibilidad obtenidos en tiempo real, consultando directamente la página web de cada tienda.
+          </p>
         </div>
       </footer>
     </div>
