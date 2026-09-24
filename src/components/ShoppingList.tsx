@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Trophy, Loader2, ListChecks, AlertCircle } from 'lucide-react';
+import { Plus, X, Trophy, Loader2, ListChecks, AlertCircle, ExternalLink } from 'lucide-react';
 import { CompareListResponse, StoreId } from '@/lib/types';
-import { STORES } from '@/lib/constants';
+import { STORES, ALL_STORE_IDS } from '@/lib/constants';
 import { formatCurrency } from '@/lib/utils';
+import { getSelectedStores, saveSelectedStores } from '@/lib/storeSelection';
+import { StoreFilter } from '@/components/StoreFilter';
 import {
   getShoppingList,
   addToShoppingList,
@@ -18,6 +20,7 @@ interface ShoppingListProps {
 
 export function ShoppingList({ currency }: ShoppingListProps) {
   const [items, setItems] = useState<string[]>([]);
+  const [selectedStores, setSelectedStores] = useState<StoreId[]>(ALL_STORE_IDS);
   const [inputValue, setInputValue] = useState('');
   const [isComparing, setIsComparing] = useState(false);
   const [result, setResult] = useState<CompareListResponse | null>(null);
@@ -25,7 +28,39 @@ export function ShoppingList({ currency }: ShoppingListProps) {
 
   useEffect(() => {
     setItems(getShoppingList());
+    // Same persisted selection as the single-product search, so switching
+    // between the two views doesn't require reconfiguring which stores to
+    // compare.
+    setSelectedStores(getSelectedStores());
   }, []);
+
+  const handleToggleStore = (storeId: StoreId) => {
+    setSelectedStores((prev) => {
+      if (prev.includes(storeId)) {
+        if (prev.length === 1) return prev; // keep at least one
+        const updated = prev.filter((id) => id !== storeId);
+        saveSelectedStores(updated);
+        return updated;
+      }
+      const updated = [...prev, storeId];
+      saveSelectedStores(updated);
+      return updated;
+    });
+    setResult(null);
+  };
+
+  const handleSelectAllStores = () => {
+    setSelectedStores(ALL_STORE_IDS);
+    saveSelectedStores(ALL_STORE_IDS);
+    setResult(null);
+  };
+
+  const handleClearAllStores = () => {
+    const single: StoreId[] = [ALL_STORE_IDS[0]];
+    setSelectedStores(single);
+    saveSelectedStores(single);
+    setResult(null);
+  };
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +88,7 @@ export function ShoppingList({ currency }: ShoppingListProps) {
       const res = await fetch('/api/compare-list', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({ items, stores: selectedStores }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => null);
@@ -68,10 +103,26 @@ export function ShoppingList({ currency }: ShoppingListProps) {
     }
   };
 
-  const allStores: StoreId[] = ['central', 'gama', 'plazas', 'kalea', 'farmatodo', 'riomarket'];
+  const storeCounts = ALL_STORE_IDS.reduce((acc, id) => {
+    acc[id] = result?.storeTotals.find((s) => s.store === id)?.foundCount ?? 0;
+    return acc;
+  }, {} as Record<StoreId, number>);
+
+  // The stores actually reflected in the last comparison (may differ from
+  // `selectedStores` if the filter changed after a compare already ran).
+  const resultStores: StoreId[] = result ? result.storeTotals.map((s) => s.store) : [];
 
   return (
     <div className="space-y-6">
+      {/* Store filter — shared with the single-product search */}
+      <StoreFilter
+        selectedStores={selectedStores}
+        onToggleStore={handleToggleStore}
+        onSelectAll={handleSelectAllStores}
+        onClearAll={handleClearAllStores}
+        storeCounts={storeCounts}
+      />
+
       {/* Add items */}
       <section className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
         <div className="flex items-center space-x-2">
@@ -159,7 +210,7 @@ export function ShoppingList({ currency }: ShoppingListProps) {
       {result && (
         <section className="space-y-4">
           {/* Store totals ranking */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {result.storeTotals.map((s) => {
               const isCheapest = s.store === result.cheapestStoreId;
               return (
@@ -210,7 +261,7 @@ export function ShoppingList({ currency }: ShoppingListProps) {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
                   <th className="text-left font-bold text-slate-700 px-4 py-3">Producto</th>
-                  {allStores.map((store) => (
+                  {resultStores.map((store) => (
                     <th
                       key={store}
                       className="text-right font-bold text-slate-700 px-4 py-3 whitespace-nowrap"
@@ -222,7 +273,7 @@ export function ShoppingList({ currency }: ShoppingListProps) {
               </thead>
               <tbody>
                 {result.itemResults.map(({ query, matches }) => {
-                  const prices = allStores
+                  const prices = resultStores
                     .map((store) => matches[store]?.priceUsd)
                     .filter((p): p is number => typeof p === 'number');
                   const minPrice = prices.length > 0 ? Math.min(...prices) : null;
@@ -230,27 +281,33 @@ export function ShoppingList({ currency }: ShoppingListProps) {
                   return (
                     <tr key={query} className="border-b border-slate-100 last:border-0">
                       <td className="px-4 py-3 font-medium text-slate-800">{query}</td>
-                      {allStores.map((store) => {
+                      {resultStores.map((store) => {
                         const product = matches[store];
                         const isCheapestCell =
                           product && minPrice !== null && product.priceUsd === minPrice;
                         return (
-                          <td
-                            key={store}
-                            className={`px-4 py-3 text-right ${
-                              isCheapestCell
-                                ? 'font-bold text-green-700'
-                                : product
-                                ? 'text-slate-700'
-                                : 'text-slate-300'
-                            }`}
-                          >
-                            {product
-                              ? formatCurrency(
+                          <td key={store} className="px-4 py-3 text-right">
+                            {product ? (
+                              <a
+                                href={product.productUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={`Ver ${product.name} en ${STORES[store].name}`}
+                                className={`inline-flex items-center gap-1 hover:underline ${
+                                  isCheapestCell
+                                    ? 'font-bold text-green-700'
+                                    : 'text-slate-700 hover:text-blue-700'
+                                }`}
+                              >
+                                {formatCurrency(
                                   currency === 'USD' ? product.priceUsd : product.priceVes,
                                   currency
-                                )
-                              : '—'}
+                                )}
+                                <ExternalLink className="w-3 h-3 opacity-60" />
+                              </a>
+                            ) : (
+                              <span className="text-slate-300">—</span>
+                            )}
                           </td>
                         );
                       })}

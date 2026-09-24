@@ -9,6 +9,8 @@ import { ProductCard } from '@/components/ProductCard';
 import { StoreComparisonSummary } from '@/components/StoreComparisonSummary';
 import { SideBySideView } from '@/components/SideBySideView';
 import { Product, StoreId, SearchResponse, ExchangeRateInfo } from '@/lib/types';
+import { ALL_STORE_IDS } from '@/lib/constants';
+import { getSelectedStores, saveSelectedStores } from '@/lib/storeSelection';
 import {
   ArrowUpDown,
   LayoutGrid,
@@ -24,17 +26,13 @@ export default function HomePage() {
   const [rateInfo, setRateInfo] = useState<ExchangeRateInfo | null>(null);
   const [isLoadingRate, setIsLoadingRate] = useState(true);
 
-  const [selectedStores, setSelectedStores] = useState<StoreId[]>([
-    'central',
-    'gama',
-    'plazas',
-    'kalea',
-    'farmatodo',
-    'riomarket',
-  ]);
+  // Default to all stores for the very first (server) render; the actual
+  // persisted preference (shared with the shopping list) is restored on
+  // mount, together with the initial search below.
+  const [selectedStores, setSelectedStores] = useState<StoreId[]>(ALL_STORE_IDS);
 
   const [sortBy, setSortBy] = useState<'price-asc' | 'price-desc' | 'relevance'>('price-asc');
-  const [viewMode, setViewMode] = useState<'grid' | 'columns'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'columns'>('columns');
 
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<SearchResponse | null>(null);
@@ -100,9 +98,15 @@ export default function HomePage() {
     []
   );
 
-  // Trigger initial search
+  // Restore the persisted store selection (shared with the shopping list)
+  // and run the initial search with it, in the same effect so the first
+  // search always uses the right list instead of a default that gets
+  // silently corrected afterwards.
   useEffect(() => {
-    performSearch(query, selectedStores, sortBy);
+    const restored = getSelectedStores();
+    setSelectedStores(restored);
+    performSearch(query, restored, sortBy);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearchSubmit = (newQuery: string) => {
@@ -119,18 +123,20 @@ export default function HomePage() {
       updated = [...selectedStores, storeId];
     }
     setSelectedStores(updated);
+    saveSelectedStores(updated);
     performSearch(query, updated, sortBy);
   };
 
   const handleSelectAllStores = () => {
-    const all: StoreId[] = ['central', 'gama', 'plazas', 'kalea', 'farmatodo', 'riomarket'];
-    setSelectedStores(all);
-    performSearch(query, all, sortBy);
+    setSelectedStores(ALL_STORE_IDS);
+    saveSelectedStores(ALL_STORE_IDS);
+    performSearch(query, ALL_STORE_IDS, sortBy);
   };
 
   const handleClearAllStores = () => {
     const single: StoreId[] = ['central'];
     setSelectedStores(single);
+    saveSelectedStores(single);
     performSearch(query, single, sortBy);
   };
 

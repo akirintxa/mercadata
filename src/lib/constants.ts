@@ -69,6 +69,8 @@ export const STORES: Record<StoreId, StoreInfo> = {
   },
 };
 
+export const ALL_STORE_IDS: StoreId[] = Object.keys(STORES) as StoreId[];
+
 export const POPULAR_SEARCHES = [
   'Harina PAN',
   'Leche Completa 1L',

@@ -1,4 +1,5 @@
 import { Product, StoreId, SearchResponse } from '../types';
+import { ALL_STORE_IDS } from '../constants';
 import { getExchangeRate } from './bcv';
 import { searchCentral } from './central';
 import { searchGama } from './gama';
@@ -23,16 +24,12 @@ export async function searchAllStores(
 
   const enabledStores: StoreId[] = options.stores && options.stores.length > 0
     ? options.stores
-    : ['central', 'gama', 'plazas', 'kalea', 'farmatodo', 'riomarket'];
+    : ALL_STORE_IDS;
 
-  const storeCounts: Record<StoreId, number> = {
-    central: 0,
-    gama: 0,
-    plazas: 0,
-    kalea: 0,
-    farmatodo: 0,
-    riomarket: 0,
-  };
+  const storeCounts = ALL_STORE_IDS.reduce((acc, id) => {
+    acc[id] = 0;
+    return acc;
+  }, {} as Record<StoreId, number>);
 
   const errors: Record<string, string> = {};
 

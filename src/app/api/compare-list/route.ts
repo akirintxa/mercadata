@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { compareShoppingList } from '@/lib/scrapers/compareList';
+import { StoreId } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,8 +30,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const stores: StoreId[] | undefined = Array.isArray(body?.stores)
+    ? (body.stores.filter((s: unknown) => typeof s === 'string') as StoreId[])
+    : undefined;
+
   try {
-    const result = await compareShoppingList(items);
+    const result = await compareShoppingList(items, { stores });
     return NextResponse.json(result);
   } catch (err: any) {
     console.error('Compare-list API error:', err);

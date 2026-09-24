@@ -1,10 +1,13 @@
 import { StoreId, Product, ListItemMatch, StoreListTotal, CompareListResponse } from '../types';
-import { STORES } from '../constants';
+import { STORES, ALL_STORE_IDS } from '../constants';
 import { searchAllStores } from './index';
 import { getExchangeRate } from './bcv';
 
 const MAX_LIST_ITEMS = 25;
-const ALL_STORES: StoreId[] = ['central', 'gama', 'plazas', 'kalea', 'farmatodo', 'riomarket'];
+
+interface CompareListOptions {
+  stores?: StoreId[];
+}
 
 /**
  * For a shopping list, resolves each item independently (reusing the same
@@ -15,17 +18,20 @@ const ALL_STORES: StoreId[] = ['central', 'gama', 'plazas', 'kalea', 'farmatodo'
  * so the user can judge whether the total is really comparable.
  */
 export async function compareShoppingList(
-  rawItems: string[]
+  rawItems: string[],
+  options: CompareListOptions = {}
 ): Promise<CompareListResponse> {
   const items = Array.from(
     new Set(rawItems.map((i) => i.trim()).filter(Boolean))
   ).slice(0, MAX_LIST_ITEMS);
 
+  const stores = options.stores && options.stores.length > 0 ? options.stores : ALL_STORE_IDS;
+
   const rateInfo = await getExchangeRate();
 
   const itemResults: ListItemMatch[] = await Promise.all(
     items.map(async (query) => {
-      const result = await searchAllStores(query, { sortBy: 'price-asc' });
+      const result = await searchAllStores(query, { stores, sortBy: 'price-asc' });
 
       // `products` is sorted price-asc, so the first product seen per store
       // is that store's cheapest in-stock match for this item.
@@ -41,7 +47,7 @@ export async function compareShoppingList(
     })
   );
 
-  const storeTotals: StoreListTotal[] = ALL_STORES.map((store) => {
+  const storeTotals: StoreListTotal[] = stores.map((store) => {
     let totalUsd = 0;
     let totalVes = 0;
     let foundCount = 0;
