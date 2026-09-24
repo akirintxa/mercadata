@@ -1,4 +1,11 @@
-export type StoreId = 'central' | 'gama' | 'plazas' | 'kalea' | 'farmatodo' | 'riomarket';
+export type StoreId =
+  | 'central'
+  | 'gama'
+  | 'plazas'
+  | 'kalea'
+  | 'farmatodo'
+  | 'riomarket'
+  | 'plansuarez';
 
 export interface StoreInfo {
   id: StoreId;

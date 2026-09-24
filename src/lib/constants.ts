@@ -67,6 +67,17 @@ export const STORES: Record<StoreId, StoreInfo> = {
     url: 'https://www.riomarket.com',
     currencyNative: 'USD',
   },
+  plansuarez: {
+    id: 'plansuarez',
+    name: 'Plan Suarez',
+    shortName: 'Plan Suarez',
+    color: 'text-blue-900 dark:text-blue-200',
+    bgColor: 'bg-blue-50/80 dark:bg-blue-950/40',
+    borderColor: 'border-blue-200 dark:border-blue-800',
+    logoText: 'PLANSUAREZ',
+    url: 'https://www.plansuarez.com',
+    currencyNative: 'VES',
+  },
 };
 
 export const ALL_STORE_IDS: StoreId[] = Object.keys(STORES) as StoreId[];

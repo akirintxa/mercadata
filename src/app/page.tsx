@@ -19,6 +19,11 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
+const emptyStoreCounts: Record<StoreId, number> = ALL_STORE_IDS.reduce((acc, id) => {
+  acc[id] = 0;
+  return acc;
+}, {} as Record<StoreId, number>);
+
 export default function HomePage() {
   const [query, setQuery] = useState('Harina PAN');
   const [currency, setCurrency] = useState<'USD' | 'VES'>('USD');
@@ -176,7 +181,7 @@ export default function HomePage() {
               Busca un producto y compara su precio
             </h1>
             <p className="text-sm text-slate-500">
-              Entre Central Madeirense, Gama, Plaza&apos;s, Kalea, Farmatodo y Rio Market, con IVA incluido.
+              Entre Central Madeirense, Gama, Plaza&apos;s, Kalea, Farmatodo, Rio Market y Plan Suarez, con IVA incluido.
             </p>
           </div>
 
@@ -195,7 +200,7 @@ export default function HomePage() {
           onToggleStore={handleToggleStore}
           onSelectAll={handleSelectAllStores}
           onClearAll={handleClearAllStores}
-          storeCounts={results?.storeCounts || { central: 0, gama: 0, plazas: 0, kalea: 0, farmatodo: 0, riomarket: 0 }}
+          storeCounts={results?.storeCounts || emptyStoreCounts}
           storeErrors={results?.errors}
         />
 
@@ -352,7 +357,7 @@ export default function HomePage() {
             Mercadata VZLA — Comparador de Precios de Supermercados
           </p>
           <p className="text-slate-400">
-            Precios y disponibilidad obtenidos en tiempo real, consultando directamente la página web de Central Madeirense, Gama, Plaza&apos;s, Kalea, Farmatodo y Rio Market.
+            Precios y disponibilidad obtenidos en tiempo real, consultando directamente la página web de Central Madeirense, Gama, Plaza&apos;s, Kalea, Farmatodo, Rio Market y Plan Suarez.
           </p>
         </div>
       </footer>

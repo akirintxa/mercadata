@@ -18,16 +18,18 @@ Mercadata está construido como una aplicación full-stack en **Next.js 14 (App 
                         ├── compareShoppingList()
                         └── evaluateProductMatch()
                                     │
-  ┌──────────┬───────────┼───────────┬──────────┬───────────┐
-  ▼          ▼           ▼           ▼          ▼           ▼
-[Central] [Gama]     [Plaza's]   [Kalea]   [Farmatodo] [Rio Market]
-(WooComm) (SAP OCC)  (Magento)   (Supabase) (Algolia)  (Instaleap RSC)
-                     ⚠ ver nota
+  ┌────────┬─────────┼─────────┬────────┬──────────┬──────────┐
+  ▼        ▼         ▼         ▼        ▼          ▼          ▼
+[Central][Gama]  [Plaza's] [Kalea] [Farmatodo] [Rio Market] [Plan Suarez]
+(WooComm)(SAP OCC)(Magento)(Supabase)(Algolia) (Instaleap RSC) (OpenCart)
+                  ⚠ ver nota
 ```
 
 > **Nota — Plaza's (`searchPlazas`)**: el sitio activó el "Managed Challenge" de Cloudflare en **todo** el dominio (incluso `robots.txt`), que requiere resolver un desafío JS en un navegador real y no puede pasarse desde un `fetch()` de servidor. El scraper detecta esto (`cf-mitigated` / 403) y lo reporta como error en `SearchResponse.errors.plazas` en lugar de devolver 0 resultados silenciosamente. No se intenta evadir la protección; mientras siga activa, Plaza's no aportará resultados.
 
 > **Nota — Rio Market (`searchRiomarket`)**: corre sobre Instaleap (Next.js App Router) y no expone una API GraphQL pública al navegador — la propia página server-side hace esa llamada. Lo que sí es accesible es el payload de React Server Components ("Flight") de `/search?name=`, pidiéndolo con las cabeceras `rsc: 1` / `next-url: /search` como haría una navegación normal del cliente. Ese payload son líneas `<id>:<json>`; se parsean todas y se quedan los objetos que traen `name`+`price`+`sku`+`slug` juntos. Requiere fijar una sucursal vía cookies (`_IL-storeId`, `_IL-storeReference`), igual que Central/Plaza's están anclados a una sucursal física.
+
+> **Nota — Plan Suarez (`searchPlansuarez`)**: corre sobre OpenCart clásico, server-renderizado. Se consulta `index.php?route=product/search&search=` y se parsea el HTML de cada `product-thumb` (nombre, `price-normal` ya con IVA, imagen y `product_id`) con regex, igual que Plaza's. El listado no expone un flag real de stock/disponibilidad — en cientos de productos revisados (incluida una categoría completa) siempre aparece el botón de "agregar al carrito" activo — así que se reporta `inStock: true` para todo lo que aparece en el listado.
 
 ## Componentes Clave
 

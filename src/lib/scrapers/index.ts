@@ -7,6 +7,7 @@ import { searchPlazas } from './plazas';
 import { searchKalea } from './kalea';
 import { searchFarmatodo } from './farmatodo';
 import { searchRiomarket } from './riomarket';
+import { searchPlansuarez } from './plansuarez';
 import { evaluateProductMatch, normalizeText, STOPWORDS } from '../searchMatcher';
 
 interface SearchOptions {
@@ -127,6 +128,14 @@ export async function searchAllStores(
       searchStoreWithFallback(searchRiomarket)
         .then((products) => ({ store: 'riomarket' as const, products }))
         .catch((err) => ({ store: 'riomarket' as const, products: [], error: String(err) }))
+    );
+  }
+
+  if (enabledStores.includes('plansuarez')) {
+    tasks.push(
+      searchStoreWithFallback(searchPlansuarez)
+        .then((products) => ({ store: 'plansuarez' as const, products }))
+        .catch((err) => ({ store: 'plansuarez' as const, products: [], error: String(err) }))
     );
   }
 
