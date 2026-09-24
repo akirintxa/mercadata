@@ -1,6 +1,6 @@
 # Mercadata
 
-**Mercadata** es un comparador de precios en tiempo real para los principales supermercados y farmacias de Venezuela (**Central Madeirense**, **Gama Supermercados**, **Automercados Plaza's**, **Kalea Market** y **Farmatodo**). Permite a los usuarios encontrar rápidamente qué establecimiento ofrece el precio más bajo para cualquier producto, con precios estandarizados con **IVA incluido**, conversión automática de divisas (USD / Bs. a tasa oficial BCV) y filtros inteligentes por presentación y marca.
+**Mercadata** es un comparador de precios en tiempo real para los principales supermercados y farmacias de Venezuela (**Central Madeirense**, **Gama Supermercados**, **Automercados Plaza's**, **Kalea Market**, **Farmatodo** y **Rio Market**). Permite a los usuarios encontrar rápidamente qué establecimiento ofrece el precio más bajo para cualquier producto, con precios estandarizados con **IVA incluido**, conversión automática de divisas (USD / Bs. a tasa oficial BCV) y filtros inteligentes por presentación y marca.
 
 Este repositorio se desarrolla con **Spec-Driven Development (SDD)**. Los documentos vivos están en `docs/` y `specs/`.
 
@@ -8,7 +8,7 @@ Este repositorio se desarrolla con **Spec-Driven Development (SDD)**. Los docume
 
 ## 🚀 Características Principales
 
-- **Comparación Multi-Tienda en Tiempo Real**: Conexión directa a las APIs y catálogos de 5 grandes cadenas de retail en Venezuela.
+- **Comparación Multi-Tienda en Tiempo Real**: Conexión directa a las APIs y catálogos de 6 grandes cadenas de retail en Venezuela.
 - **Precios con IVA Incluido**: Estandarización de precios finales al consumidor donde aplica el 16% de IVA y productos exentos (0%).
 - **Ordenamiento de Menor a Mayor Precio**: Los resultados se ordenan de forma predeterminada desde el más económico al más costoso.
 - **Búsqueda y Emparejamiento Inteligente**:
@@ -29,6 +29,7 @@ Este repositorio se desarrolla con **Spec-Driven Development (SDD)**. Los docume
 | **Automercados Plaza's** | Catálogo Magento (HTML Parsing) | USD | `finalPrice` (con IVA) |
 | **Kalea Market** | Supabase PostgREST API | VES | `inventory.price` (con IVA) |
 | **Farmatodo** | Algolia Search Engine API | VES | `fullPrice` / `unitPrice + taxes` (con IVA) |
+| **Rio Market** | Instaleap (Next.js RSC payload) | USD | `price` (con IVA) |
 
 ---
 

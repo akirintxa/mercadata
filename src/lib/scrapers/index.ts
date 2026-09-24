@@ -5,6 +5,7 @@ import { searchGama } from './gama';
 import { searchPlazas } from './plazas';
 import { searchKalea } from './kalea';
 import { searchFarmatodo } from './farmatodo';
+import { searchRiomarket } from './riomarket';
 import { evaluateProductMatch, normalizeText, STOPWORDS } from '../searchMatcher';
 
 interface SearchOptions {
@@ -22,7 +23,7 @@ export async function searchAllStores(
 
   const enabledStores: StoreId[] = options.stores && options.stores.length > 0
     ? options.stores
-    : ['central', 'gama', 'plazas', 'kalea', 'farmatodo'];
+    : ['central', 'gama', 'plazas', 'kalea', 'farmatodo', 'riomarket'];
 
   const storeCounts: Record<StoreId, number> = {
     central: 0,
@@ -30,6 +31,7 @@ export async function searchAllStores(
     plazas: 0,
     kalea: 0,
     farmatodo: 0,
+    riomarket: 0,
   };
 
   const errors: Record<string, string> = {};
@@ -120,6 +122,14 @@ export async function searchAllStores(
       searchStoreWithFallback(searchFarmatodo)
         .then((products) => ({ store: 'farmatodo' as const, products }))
         .catch((err) => ({ store: 'farmatodo' as const, products: [], error: String(err) }))
+    );
+  }
+
+  if (enabledStores.includes('riomarket')) {
+    tasks.push(
+      searchStoreWithFallback(searchRiomarket)
+        .then((products) => ({ store: 'riomarket' as const, products }))
+        .catch((err) => ({ store: 'riomarket' as const, products: [], error: String(err) }))
     );
   }
 

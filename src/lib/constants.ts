@@ -56,6 +56,17 @@ export const STORES: Record<StoreId, StoreInfo> = {
     url: 'https://www.farmatodo.com.ve',
     currencyNative: 'VES',
   },
+  riomarket: {
+    id: 'riomarket',
+    name: 'Rio Market',
+    shortName: 'Rio Market',
+    color: 'text-blue-900 dark:text-blue-200',
+    bgColor: 'bg-blue-50/80 dark:bg-blue-950/40',
+    borderColor: 'border-blue-200 dark:border-blue-800',
+    logoText: 'RIO',
+    url: 'https://www.riomarket.com',
+    currencyNative: 'USD',
+  },
 };
 
 export const POPULAR_SEARCHES = [

@@ -30,6 +30,7 @@ export default function HomePage() {
     'plazas',
     'kalea',
     'farmatodo',
+    'riomarket',
   ]);
 
   const [sortBy, setSortBy] = useState<'price-asc' | 'price-desc' | 'relevance'>('price-asc');
@@ -122,7 +123,7 @@ export default function HomePage() {
   };
 
   const handleSelectAllStores = () => {
-    const all: StoreId[] = ['central', 'gama', 'plazas', 'kalea', 'farmatodo'];
+    const all: StoreId[] = ['central', 'gama', 'plazas', 'kalea', 'farmatodo', 'riomarket'];
     setSelectedStores(all);
     performSearch(query, all, sortBy);
   };
@@ -188,7 +189,7 @@ export default function HomePage() {
           onToggleStore={handleToggleStore}
           onSelectAll={handleSelectAllStores}
           onClearAll={handleClearAllStores}
-          storeCounts={results?.storeCounts || { central: 0, gama: 0, plazas: 0, kalea: 0, farmatodo: 0 }}
+          storeCounts={results?.storeCounts || { central: 0, gama: 0, plazas: 0, kalea: 0, farmatodo: 0, riomarket: 0 }}
           storeErrors={results?.errors}
         />
 

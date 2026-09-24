@@ -4,7 +4,7 @@ import { searchAllStores } from './index';
 import { getExchangeRate } from './bcv';
 
 const MAX_LIST_ITEMS = 25;
-const ALL_STORES: StoreId[] = ['central', 'gama', 'plazas', 'kalea', 'farmatodo'];
+const ALL_STORES: StoreId[] = ['central', 'gama', 'plazas', 'kalea', 'farmatodo', 'riomarket'];
 
 /**
  * For a shopping list, resolves each item independently (reusing the same

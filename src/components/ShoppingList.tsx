@@ -68,7 +68,7 @@ export function ShoppingList({ currency }: ShoppingListProps) {
     }
   };
 
-  const allStores: StoreId[] = ['central', 'gama', 'plazas', 'kalea', 'farmatodo'];
+  const allStores: StoreId[] = ['central', 'gama', 'plazas', 'kalea', 'farmatodo', 'riomarket'];
 
   return (
     <div className="space-y-6">
