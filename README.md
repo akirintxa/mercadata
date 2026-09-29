@@ -16,7 +16,7 @@ Este repositorio se desarrolla con **Spec-Driven Development (SDD)**. Los docume
   - *Detección de marca*: `harina pan` identifica la marca P.A.N. y descarta panes de panadería y otras marcas.
   - *Filtro de presentación*: `coca cola 1lt` filtra exclusivamente botellas de 1 Litro (descartando 2L, 1.5L y latas).
 - **Conversor de Divisas**: Visualización simultánea en **Dólares ($ USD)** y **Bolívares (Bs. VES)** con tasa oficial actualizada del Banco Central de Venezuela (BCV).
-- **Vistas Duales**: Vista en cuadrícula general y vista en columnas lado a lado por supermercado.
+- **Vistas Duales**: Vista general (del más barato al más caro, por defecto) y vista en columnas por supermercado, ordenadas por el precio más bajo de cada una.
 
 ---
 
@@ -76,6 +76,9 @@ npm run start
     - `q`: Término de búsqueda (ej. `harina pan`, `leche completa`, `coca cola 1lt`).
     - `stores`: Lista separada por comas (`central,gama,plazas,kalea,farmatodo`).
     - `sortBy`: `price-asc` (menor a mayor precio, por defecto), `price-desc`, `relevance`.
+- **`POST /api/compare-list`**:
+  - Cuerpo: `{ "items": [{ "id": "1", "query": "leche descremada la pastoreña 1l", "quantity": 2 }], "stores": ["central", "kalea"] }` (también acepta `items` como arreglo de textos).
+  - Devuelve, por producto, hasta 4 opciones en stock por tienda y el total por tienda (precio × cantidad). Ver [spec 003](specs/003-lista-compras.md).
 - **`GET /api/rate`**:
   - Obtiene la tasa oficial BCV del día en formato JSON.
 

@@ -1,9 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Mercadata Venezuela | Comparador de Precios de Supermercados",
-  description: "Compara precios de productos en Central Madeirense, Gama, Plaza's, Kalea y Farmatodo en tiempo real.",
+  description: "Arma tu lista de compras y mira, con foto y precio, en cuál supermercado venezolano consigues cada producto.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#2563eb",
 };
 
 export default function RootLayout({

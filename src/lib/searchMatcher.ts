@@ -174,3 +174,16 @@ export function getStoreSearchQuery(query: string): string {
   // Normalize units for store searching
   return normalizeText(query);
 }
+
+/**
+ * Pulls the presentation/size out of a product name ("Leche Descremada La
+ * Pastoreña 1 Lt" -> "1L"), in the same canonical units the matcher uses,
+ * so it can prefill a list item's presentation when the user refines it
+ * from a concrete product.
+ */
+export function extractPresentation(text: string): string | undefined {
+  const match = normalizeText(text).match(/\b(\d+(?:\.\d+)?)(kg|ml|g|l)\b/);
+  if (!match) return undefined;
+  const unit = match[2] === 'l' ? 'L' : match[2];
+  return `${match[1]}${unit}`;
+}

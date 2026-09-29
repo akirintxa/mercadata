@@ -52,9 +52,36 @@ export interface ExchangeRateInfo {
   updatedAt: string;
 }
 
-export interface ListItemMatch {
+/**
+ * One entry of the user's shopping list. `name` is the generic product the
+ * user wants ("leche descremada"); `brand` and `presentation` are optional
+ * refinements ("La Pastoreña", "1L") that narrow the search so every store
+ * is compared on the same product.
+ */
+export interface ShoppingListItem {
+  id: string;
+  name: string;
+  brand?: string;
+  presentation?: string;
+  quantity: number;
+}
+
+/** An item as sent to `/api/compare-list`: its id, search query and quantity. */
+export interface CompareListItemRequest {
+  id: string;
   query: string;
-  matches: Partial<Record<StoreId, Product>>;
+  quantity?: number;
+}
+
+export interface ListItemMatch {
+  id: string;
+  query: string;
+  quantity: number;
+  /**
+   * In-stock candidates per store, cheapest first (at most a few). The first
+   * one is the product used for that store's total.
+   */
+  options: Partial<Record<StoreId, Product[]>>;
 }
 
 export interface StoreListTotal {
@@ -68,9 +95,9 @@ export interface StoreListTotal {
 }
 
 export interface CompareListResponse {
-  items: string[];
   timestamp: string;
   exchangeRate: number;
+  stores: StoreId[];
   storeTotals: StoreListTotal[];
   itemResults: ListItemMatch[];
   cheapestStoreId: StoreId | null;
