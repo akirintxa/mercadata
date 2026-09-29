@@ -76,6 +76,9 @@ npm run start
     - `q`: Término de búsqueda (ej. `harina pan`, `leche completa`, `coca cola 1lt`).
     - `stores`: Lista separada por comas (`central,gama,plazas,kalea,farmatodo`).
     - `sortBy`: `price-asc` (menor a mayor precio, por defecto), `price-desc`, `relevance`.
+- **`POST /api/compare-list`**:
+  - Cuerpo: `{ "items": [{ "id": "1", "query": "leche descremada la pastoreña 1l", "quantity": 2 }], "stores": ["central", "kalea"] }` (también acepta `items` como arreglo de textos).
+  - Devuelve, por producto, hasta 4 opciones en stock por tienda y el total por tienda (precio × cantidad). Ver [spec 003](specs/003-lista-compras.md).
 - **`GET /api/rate`**:
   - Obtiene la tasa oficial BCV del día en formato JSON.
 

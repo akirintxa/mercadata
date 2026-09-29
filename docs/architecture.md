@@ -40,6 +40,6 @@ Mercadata está construido como una aplicación full-stack en **Next.js 14 (App 
 3. **`src/lib/scrapers/bcv.ts`**:
    - Proveedor de tasa de cambio oficial BCV con caché en memoria.
 4. **`src/lib/scrapers/compareList.ts`** (`compareShoppingList()`):
-   - Resuelve una lista de productos (uno por uno, vía `searchAllStores()`) y calcula el total por tienda tomando el match más barato en stock por producto. Expuesto en `/api/compare-list` y consumido por `src/components/ShoppingList.tsx` (ruta `/lista`).
+   - Resuelve una lista de productos (uno por uno, vía `searchAllStores()`) y devuelve hasta 4 opciones en stock por tienda para cada producto. Los totales (precio × cantidad) se calculan en `src/lib/listTotals.ts`, compartido con el cliente. Expuesto en `/api/compare-list` y consumido por `src/components/ShoppingList.tsx` (ruta `/`, la pantalla principal; `/lista` redirige ahí). La búsqueda de un solo producto está en `/buscar`. Ver `specs/003-lista-compras.md`.
 5. **`src/components/`**:
    - Componentes modulares interactivos para navegación, filtros, tarjetas de productos y vistas comparativas.
