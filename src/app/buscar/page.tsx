@@ -4,13 +4,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { ModeSwitcher } from '@/components/ModeSwitcher';
 import { SearchBar } from '@/components/SearchBar';
-import { StoreFilter } from '@/components/StoreFilter';
+import { StoreSettings } from '@/components/list/StoreSettings';
 import { ProductCard } from '@/components/ProductCard';
 import { StoreComparisonSummary } from '@/components/StoreComparisonSummary';
 import { SideBySideView } from '@/components/SideBySideView';
 import { Product, StoreId, SearchResponse, ExchangeRateInfo } from '@/lib/types';
 import { ALL_STORE_IDS } from '@/lib/constants';
 import { getSelectedStores, saveSelectedStores } from '@/lib/storeSelection';
+import { getFavoriteStore, saveFavoriteStore } from '@/lib/shoppingList';
 import {
   ArrowUpDown,
   LayoutGrid,
@@ -18,11 +19,6 @@ import {
   Search,
   AlertCircle,
 } from 'lucide-react';
-
-const emptyStoreCounts: Record<StoreId, number> = ALL_STORE_IDS.reduce((acc, id) => {
-  acc[id] = 0;
-  return acc;
-}, {} as Record<StoreId, number>);
 
 export default function SearchPage() {
   const [query, setQuery] = useState('Harina PAN');
@@ -35,9 +31,11 @@ export default function SearchPage() {
   // persisted preference (shared with the shopping list) is restored on
   // mount, together with the initial search below.
   const [selectedStores, setSelectedStores] = useState<StoreId[]>(ALL_STORE_IDS);
+  const [favoriteStore, setFavoriteStore] = useState<StoreId | null>(null);
 
   const [sortBy, setSortBy] = useState<'price-asc' | 'price-desc' | 'relevance'>('price-asc');
-  const [viewMode, setViewMode] = useState<'grid' | 'columns'>('columns');
+  // Default to the general view: every result, cheapest first.
+  const [viewMode, setViewMode] = useState<'grid' | 'columns'>('grid');
 
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<SearchResponse | null>(null);
@@ -110,6 +108,7 @@ export default function SearchPage() {
   useEffect(() => {
     const restored = getSelectedStores();
     setSelectedStores(restored);
+    setFavoriteStore(getFavoriteStore());
     performSearch(query, restored, sortBy);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -124,6 +123,7 @@ export default function SearchPage() {
     if (selectedStores.includes(storeId)) {
       if (selectedStores.length === 1) return; // keep at least one
       updated = selectedStores.filter((id) => id !== storeId);
+      if (storeId === favoriteStore) handleSetFavorite(null);
     } else {
       updated = [...selectedStores, storeId];
     }
@@ -132,17 +132,16 @@ export default function SearchPage() {
     performSearch(query, updated, sortBy);
   };
 
-  const handleSelectAllStores = () => {
-    setSelectedStores(ALL_STORE_IDS);
-    saveSelectedStores(ALL_STORE_IDS);
-    performSearch(query, ALL_STORE_IDS, sortBy);
-  };
-
-  const handleClearAllStores = () => {
-    const single: StoreId[] = ['central'];
-    setSelectedStores(single);
-    saveSelectedStores(single);
-    performSearch(query, single, sortBy);
+  // Shared with the shopping list: marking a favorite also selects it.
+  const handleSetFavorite = (storeId: StoreId | null) => {
+    setFavoriteStore(storeId);
+    saveFavoriteStore(storeId);
+    if (storeId && !selectedStores.includes(storeId)) {
+      const updated = [...selectedStores, storeId];
+      setSelectedStores(updated);
+      saveSelectedStores(updated);
+      performSearch(query, updated, sortBy);
+    }
   };
 
   const handleSortChange = (newSort: 'price-asc' | 'price-desc' | 'relevance') => {
@@ -195,13 +194,13 @@ export default function SearchPage() {
         </section>
 
         {/* Store Filters */}
-        <StoreFilter
+        <StoreSettings
           selectedStores={selectedStores}
+          favoriteStore={favoriteStore}
           onToggleStore={handleToggleStore}
-          onSelectAll={handleSelectAllStores}
-          onClearAll={handleClearAllStores}
-          storeCounts={results?.storeCounts || emptyStoreCounts}
-          storeErrors={results?.errors}
+          onSetFavorite={handleSetFavorite}
+          storeCounts={results?.storeCounts}
+          storeErrors={results?.errors as Partial<Record<StoreId, string>> | undefined}
         />
 
         {/* Results summary or best price card */}

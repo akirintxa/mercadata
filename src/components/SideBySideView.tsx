@@ -17,7 +17,19 @@ export function SideBySideView({
   selectedStores,
   currency,
 }: SideBySideViewProps) {
-  const storeList = selectedStores.map((id) => STORES[id]);
+  // Columns ordered by each store's cheapest available product, so the
+  // store with the best price comes first; stores without results go last.
+  const cheapestIn = (id: StoreId) => {
+    const prices = products.filter((p) => p.store === id && p.inStock).map((p) => p.priceUsd);
+    return prices.length > 0 ? Math.min(...prices) : Infinity;
+  };
+  const storeList = [...selectedStores]
+    .sort((a, b) => {
+      const pa = cheapestIn(a);
+      const pb = cheapestIn(b);
+      return pa === pb ? 0 : pa < pb ? -1 : 1;
+    })
+    .map((id) => STORES[id]);
 
   // Group products by store
   const storeGroups = new Map<StoreId, Product[]>();

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Check, ChevronDown, Star, Store } from 'lucide-react';
+import { AlertTriangle, Check, ChevronDown, Star, Store } from 'lucide-react';
 import { StoreId } from '@/lib/types';
 import { STORES, ALL_STORE_IDS } from '@/lib/constants';
 
@@ -10,18 +10,26 @@ interface StoreSettingsProps {
   favoriteStore: StoreId | null;
   onToggleStore: (id: StoreId) => void;
   onSetFavorite: (id: StoreId | null) => void;
+  /** Results per store from the last search, shown next to each store. */
+  storeCounts?: Partial<Record<StoreId, number>>;
+  /** Per-store errors from the last search (e.g. a store blocking access). */
+  storeErrors?: Partial<Record<StoreId, string>>;
 }
 
 /**
  * Collapsible panel to choose which stores to compare and mark a favorite.
- * Collapsed by default so the list stays the focus on small screens.
+ * Shared by the list and the single search; collapsed by default so the
+ * content stays the focus on small screens.
  */
 export function StoreSettings({
   selectedStores,
   favoriteStore,
   onToggleStore,
   onSetFavorite,
+  storeCounts,
+  storeErrors = {},
 }: StoreSettingsProps) {
+  const errorCount = Object.keys(storeErrors).length;
   const [open, setOpen] = useState(false);
 
   return (
@@ -46,6 +54,12 @@ export function StoreSettings({
               'Toca la estrella para elegir tu favorito'
             )}
           </p>
+          {errorCount > 0 && (
+            <p className="text-[11px] font-semibold text-amber-600 flex items-center gap-1 mt-0.5">
+              <AlertTriangle className="w-3 h-3" />
+              {errorCount === 1 ? '1 tienda no respondió' : `${errorCount} tiendas no respondieron`}
+            </p>
+          )}
         </div>
         <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -69,9 +83,24 @@ export function StoreSettings({
                   >
                     {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                   </span>
-                  <span className={`text-sm font-semibold ${isSelected ? 'text-slate-900' : 'text-slate-400'}`}>
-                    {STORES[id].name}
+                  <span className="min-w-0 flex-1">
+                    <span className={`block text-sm font-semibold ${isSelected ? 'text-slate-900' : 'text-slate-400'}`}>
+                      {STORES[id].name}
+                    </span>
+                    {storeErrors[id] && (
+                      <span className="block text-[11px] text-amber-600 leading-snug">{storeErrors[id]}</span>
+                    )}
                   </span>
+                  {storeErrors[id] ? (
+                    <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                  ) : (
+                    isSelected &&
+                    storeCounts?.[id] !== undefined && (
+                      <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-100 shrink-0">
+                        {storeCounts[id]}
+                      </span>
+                    )
+                  )}
                 </button>
                 <button
                   type="button"
